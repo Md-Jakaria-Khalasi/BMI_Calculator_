@@ -8,9 +8,9 @@ class MyApp extends StatelessWidget{
   @override
   Widget build(BuildContext contex){
     return MaterialApp(
-      title: 'Batch-12',
+      title: 'BMI Calculator',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
       ),
       home: HomeScreen(),
     );

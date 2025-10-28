@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 enum HeightType { cm, feetInch }
+enum WeightType { kg, lb}
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -10,54 +11,56 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  HeightType heightType = HeightType.cm;
+  HeightType ? heightType = HeightType.cm;
+  //WeightType weightType = WeightType.kg;
 
-  final weightCtr = TextEditingController();
-  final cmCtr = TextEditingController();
-  final feetCtr = TextEditingController();
-  final inchCtr = TextEditingController();
+  final weightController = TextEditingController();
+  final cmController = TextEditingController();
+  final feetController = TextEditingController();
+  final InchController = TextEditingController();
 
-  String _bmiResult = '';
+  String bmiResult = '';
 
-  String? category;
+  String? catagory;
+  Color? catcolor;
 
-  String categoryResult(double bmi) {
+  String catagoryResult(double bmi) {
     if (bmi < 18.5) return "Underweight";
-    if (bmi < 25) return "Normal";
-    if (bmi < 30) return "Overweight";
+    if (18.5 <= bmi && bmi <= 24.9) return "Normal";
+    if (25 <= bmi && bmi <= 29.9) return "Overweight";
     return "Obese";
-  }
-
-  double? cmToM() {
-    final cm = double.tryParse(cmCtr.text.trim());
-
-    if (cm == null || cm <= 0) return null;
-
-    return cm / 100.0;
   }
 
   Color categoryColor(String category) {
     switch (category) {
       case "Underweight":
-       return Colors.blue;
+        return Colors.blue;
       case "Normal":
-      return Colors.green;
+        return Colors.green;
       case "Overweight":
         return Colors.orange;
       default:
-        return Colors.grey;
+        return Colors.red;
     }
   }
 
-  // 1 inch = 0.0254 m
-  double? feetInchToM() {
-    final feet = double.tryParse(feetCtr.text.trim());
-    final inch = double.tryParse(inchCtr.text.trim());
 
+  double? cmToM() {
+    final cm = double.tryParse(cmController.text.trim());
+    if (cm == null || cm <= 0) {
+      return null;
+    } else {
+      return cm / 100;
+    }
+  }
+
+  double? feetInchToM() {
+    final feet = double.tryParse(feetController.text.trim());
+    final inch = double.tryParse(InchController.text.trim());
     if (feet == null || feet <= 0 || inch == null || inch < 0) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text("Invalid Value")));
+      ).showSnackBar(SnackBar(content: Text("Invalid Values")));
       return null;
     }
 
@@ -65,126 +68,188 @@ class _HomeScreenState extends State<HomeScreen> {
     if (totalInch <= 0) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text("Invalid Value")));
+      ).showSnackBar(SnackBar(content: Text("Invalid Values")));
+
       return null;
     }
     return totalInch * 0.0254;
   }
 
-  void _calculator() {
-    final weight = double.tryParse(weightCtr.text.trim());
+
+
+//............... calculate BMI ..............
+
+
+
+  void Calculate() {
+    final weight = double.tryParse(weightController.text.trim());
 
     if (weight == null || weight <= 0) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text("Invalid Value")));
-      return;
+      ).showSnackBar(SnackBar(content: Text("Invalid Values")));
+      return null;
     }
 
     final m = heightType == HeightType.cm ? cmToM() : feetInchToM();
     if (m == null) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text("Invalid Value")));
-      return;
+      ).showSnackBar(SnackBar(content: Text("Invalid Values")));
+      return null;
     }
+
+    //final  w = WeightType == WeightType.kg ? weightlb : weightlb /2.20462;
+
     final bmi = weight / (m * m);
-    final cat = categoryResult(bmi);
+
+    final cat = catagoryResult(bmi);
+    final color = categoryColor(cat);
 
     setState(() {
-      _bmiResult = bmi.toStringAsFixed(2);
-      category = cat;
+      bmiResult = bmi.toStringAsFixed(2);
+      catagory = cat;
+      catcolor = color;
     });
-  }
-
-  @override
-  void dispose() {
-    // TODO: implement dispose
-    weightCtr.dispose();
-    cmCtr.dispose();
-    feetCtr.dispose();
-    inchCtr.dispose();
-    super.dispose();
+    weightController.clear();
+    cmController.clear();
+    feetController.clear();
+    InchController.clear();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("BMI Calculator")),
+      appBar: AppBar(
+        title: Text('BMI Calculator'),
+        backgroundColor: Colors.green,
+      ),
 
       body: ListView(
-        padding: EdgeInsets.all(16),
         children: [
+          SizedBox(height: 10),
           TextFormField(
-            controller: weightCtr,
+            controller: weightController,
+            keyboardType: TextInputType.number,
             decoration: InputDecoration(
-              labelText: "Weight (KG)",
-              border: OutlineInputBorder(),
+              labelText: 'Weight (KG)',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 15),
 
           Text(
             "Height Unit",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 16),
           SegmentedButton<HeightType>(
             segments: [
-              const ButtonSegment<HeightType>(
+              ButtonSegment<HeightType>(
                 value: HeightType.cm,
-                label: Text("CM"),
+                label: Text('CM'),
               ),
-              const ButtonSegment<HeightType>(
+              ButtonSegment<HeightType>(
                 value: HeightType.feetInch,
-                label: Text("Feet/Inch"),
+                label: Text("Feet / Inch"),
               ),
             ],
-            selected: {heightType},
+            selected: {?heightType},
             onSelectionChanged: (value) =>
                 setState(() => heightType = value.first),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 15),
 
           if (heightType == HeightType.cm) ...[
-            TextFormField(
-              controller: cmCtr,
+            TextField(
+              keyboardType: TextInputType.number,
+              controller: cmController,
               decoration: InputDecoration(
-                labelText: "Height (cm)",
-                border: OutlineInputBorder(),
+                labelText: 'Height (cm)',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
               ),
             ),
           ] else ...[
+            SizedBox(height: 10),
             Row(
               children: [
                 Expanded(
-                  child: TextFormField(
-                    controller: feetCtr,
+                  child: TextField(
+                    keyboardType:  TextInputType.number,
+                    controller: feetController,
                     decoration: InputDecoration(
-                      labelText: "Feet (')",
-                      border: OutlineInputBorder(),
+                      labelText: "Feet(')",
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
                     ),
                   ),
                 ),
-                const SizedBox(width: 16),
+                SizedBox(width: 10),
+
                 Expanded(
-                  child: TextFormField(
-                    controller: inchCtr,
+                  child: TextField(
+                    keyboardType: TextInputType.number,
+                    controller: InchController,
                     decoration: InputDecoration(
-                      labelText: 'Inch (")',
-                      border: OutlineInputBorder(),
+                      labelText: 'Inch(")',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
                     ),
                   ),
                 ),
               ],
             ),
           ],
-          const SizedBox(height: 16),
-          ElevatedButton(onPressed: _calculator, child: Text("Show Result")),
-          const SizedBox(height: 16),
-          Text("Result: $_bmiResult"),
-          Text("Category: $category"),
-          const SizedBox(height: 16),
+          SizedBox(height: 15),
+
+          SizedBox(height: 15),
+          ElevatedButton(
+            onPressed: Calculate,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              foregroundColor: Colors.black,
+            ),
+            child: Text(
+              'Calculate',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+            ),
+          ),
+
+          SizedBox(height: 20),
+
+          Card(
+            color: catcolor ?? Colors.grey,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadiusGeometry.circular(15),
+            ),
+            elevation: 5,
+            child: Column(
+              children: [
+                Text(
+                  "BMI : ${bmiResult}",
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                SizedBox(height: 15),
+                Text(
+                  "Catagorey: ${catagory ?? ''}",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
