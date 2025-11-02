@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 enum HeightType { cm, feetInch }
-enum WeightType { kg, lb}
+
+enum WeightType { kg, lb }
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -11,8 +12,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  HeightType ? heightType = HeightType.cm;
-  //WeightType weightType = WeightType.kg;
+  HeightType? heightType = HeightType.cm;
+  WeightType weightType = WeightType.kg;
 
   final weightController = TextEditingController();
   final cmController = TextEditingController();
@@ -44,7 +45,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-
   double? cmToM() {
     final cm = double.tryParse(cmController.text.trim());
     if (cm == null || cm <= 0) {
@@ -75,20 +75,20 @@ class _HomeScreenState extends State<HomeScreen> {
     return totalInch * 0.0254;
   }
 
-
-
-//............... calculate BMI ..............
-
-
+  //............... calculate BMI ..............
 
   void Calculate() {
-    final weight = double.tryParse(weightController.text.trim());
+    var weight = double.tryParse(weightController.text.trim());
 
     if (weight == null || weight <= 0) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text("Invalid Values")));
       return null;
+    }
+
+    if (weightType == WeightType.lb) {
+      weight = weight * 0.453592;
     }
 
     final m = heightType == HeightType.cm ? cmToM() : feetInchToM();
@@ -128,11 +128,28 @@ class _HomeScreenState extends State<HomeScreen> {
       body: ListView(
         children: [
           SizedBox(height: 10),
+          SegmentedButton<WeightType>(
+            segments: [
+              ButtonSegment<WeightType>(
+                value: WeightType.kg,
+                label: Text('Kg'),
+              ),
+              ButtonSegment<WeightType>(
+                value: WeightType.lb,
+                label: Text('lb(pound)'),
+              ),
+            ],
+            selected: {?weightType},
+            onSelectionChanged: (value) =>
+                setState(() => weightType = value.first),
+          ),
+
+          SizedBox(height: 10),
           TextFormField(
             controller: weightController,
             keyboardType: TextInputType.number,
             decoration: InputDecoration(
-              labelText: 'Weight (KG)',
+              labelText: 'Weight ',
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(15),
               ),
@@ -178,7 +195,7 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 Expanded(
                   child: TextField(
-                    keyboardType:  TextInputType.number,
+                    keyboardType: TextInputType.number,
                     controller: feetController,
                     decoration: InputDecoration(
                       labelText: "Feet(')",
@@ -248,6 +265,17 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ],
+            ),
+          ),
+
+          SizedBox(height: 330),
+          Center(
+            child: Text("Developed By Jakaria",
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+
+            ),
             ),
           ),
         ],
